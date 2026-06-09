@@ -355,6 +355,19 @@
     margin-top: 0.5rem;
   }
   .btn-submit:hover { background: var(--mist); }
+  .form-success {
+    display: none;
+    background: rgba(255,255,255,0.1);
+    border: 1px solid var(--mist);
+    border-radius: 2px;
+    padding: 2rem;
+    text-align: center;
+    color: var(--white);
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 1.2rem;
+    font-weight: 300;
+    line-height: 1.6;
+  }
 
   /* ── FOOTER ── */
   footer {
@@ -621,7 +634,7 @@
         <svg class="info-icon" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
           <path d="M3 4C3 4 5 3 6.5 5L8 8C8 8 8.5 9 7.5 10L6 11.5C7 13.5 9 15.5 11 16L12.5 14.5C13.5 13.5 14.5 14 14.5 14L17 15.5C19 17 18 19 18 19C18 19 14 21 8 15C2 9 3 4 3 4Z" stroke="rgba(200,216,188,0.8)" stroke-width="1.2" fill="none" stroke-linejoin="round"/>
         </svg>
-        <span>Telegram - @irynavaso </span>
+        <span>Telegram / Instagram: @iryna.vasyo</span>
       </div>
       <div class="info-row">
         <svg class="info-icon" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -632,7 +645,7 @@
       </div>
     </div>
   </div>
-  <div class="contact-form reveal">
+  <div class="contact-form reveal" id="contact-form">
     <div class="form-row">
       <div class="form-group">
         <label>Ваше ім'я</label>
@@ -658,7 +671,10 @@
       <label>Ваше повідомлення (необов'язково)</label>
       <textarea placeholder="Розкажіть трохи про ситуацію або просто напишіть 'хочу записатись'…"></textarea>
     </div>
-    <button class="btn-submit">Надіслати запит →</button>
+    <button class="btn-submit" id="submit-btn">Надіслати запит →</button>
+    <div class="form-success" id="form-success">
+      Дякую за звернення!<br>Я зв'яжусь з вами найближчим часом.
+    </div>
   </div>
 </section>
 
@@ -669,6 +685,48 @@
 </footer>
 
 <script>
+// Formspree contact form
+document.getElementById('submit-btn').addEventListener('click', async () => {
+  const form = document.getElementById('contact-form');
+  const name = form.querySelector('input[type="text"]').value;
+  const contact = form.querySelectorAll('input[type="text"]')[1].value;
+  const topic = form.querySelector('select').value;
+  const message = form.querySelector('textarea').value;
+
+  if (!name || !contact) {
+    alert('Будь ласка, заповніть ім\'я та контакт.');
+    return;
+  }
+
+  const btn = document.getElementById('submit-btn');
+  btn.textContent = 'Надсилаю...';
+  btn.disabled = true;
+
+  try {
+    const res = await fetch('https://formspree.io/f/xeewkboj', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
+      body: JSON.stringify({ name, contact, topic, message })
+    });
+
+    if (res.ok) {
+      form.querySelector('.contact-form > *:not(#form-success)') ;
+      Array.from(form.children).forEach(el => {
+        if (el.id !== 'form-success') el.style.display = 'none';
+      });
+      document.getElementById('form-success').style.display = 'block';
+    } else {
+      btn.textContent = 'Надіслати запит →';
+      btn.disabled = false;
+      alert('Щось пішло не так. Напишіть на irunka0310@gmail.com');
+    }
+  } catch {
+    btn.textContent = 'Надіслати запит →';
+    btn.disabled = false;
+    alert('Помилка з\'єднання. Напишіть на irunka0310@gmail.com');
+  }
+});
+
 // Scroll reveal
 const observer = new IntersectionObserver((entries) => {
   entries.forEach((entry, i) => {
